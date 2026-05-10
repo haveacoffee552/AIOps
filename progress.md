@@ -68,11 +68,12 @@ Check off each item as you complete it. Commit this file after each session.
 - [ ] Build Module 4: 90-day historical data pipeline
 - [ ] Build Module 4: saturation forecaster (24–72 hour horizon)
 - [ ] Build Module 4: proactive alert integration with Module 1
+- [ ] Verify: at least one proactive alert appears in data/alerts.jsonl (or document why saturation is not predicted)
 
 ## Phase 6 — Capstone Integration + MLOps (Month 7)
 
 ### Week 1–2: Integration
-- [ ] Unified data pipeline (OTel → feature store → model layer)
+- [ ] Unified data pipeline (OTel collector → shared JSONL event files → module inputs)
 - [ ] Standardized alert/event schema
 - [ ] FastAPI layer serving all 4 modules
 - [ ] Grafana dashboard
