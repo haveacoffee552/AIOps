@@ -71,6 +71,11 @@ pip install causal-learn
 **What it does:** Full RCA pipeline from NeurIPS 2022. Includes dataset, evaluation, and three RCA algorithms.
 **When to use:** Study the codebase to understand how production RCA is evaluated. The `circa/alg/` directory is the core.
 
+### MicroTosca (University of Pisa)
+**Repo:** https://github.com/di-unipi-socc/microTosca
+**What it does:** Topology-aware modeling for microservice architectures. Identifies architectural smells that cause operational problems.
+**When to use:** Reference for understanding how topology shapes RCA — study alongside `graph_builder.py` in Module 3.
+
 ---
 
 ## Capacity Planning

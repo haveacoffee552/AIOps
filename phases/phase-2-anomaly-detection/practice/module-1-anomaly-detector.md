@@ -17,6 +17,12 @@ aiops-platform/modules/anomaly_detector/
 └── main.py           # Orchestrate: collect → detect → score → alert
 ```
 
+## Step 0: Install dependencies
+
+```bash
+pip install requests scikit-learn pandas
+```
+
 ## Step 1: collector.py
 
 ```python
@@ -141,9 +147,9 @@ from scorer    import add_severity
 from alerter   import write_alerts
 
 METRICS = [
-    ("node_cpu_seconds_total{mode='idle'}", "cpu_idle"),
-    ("node_memory_MemAvailable_bytes",       "mem_available"),
-    ("http_requests_total",                  "http_requests"),
+    ("rate(node_cpu_seconds_total{mode='idle'}[5m])", "cpu_idle"),
+    ("node_memory_MemAvailable_bytes",                 "mem_available"),
+    ("rate(http_requests_total[5m])",                  "http_requests"),
 ]
 
 def run_once():

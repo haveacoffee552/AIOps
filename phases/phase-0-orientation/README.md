@@ -45,7 +45,7 @@ For each product, read the product page and one customer case study. Answer: *wh
 python --version  # Should be 3.11+
 
 # Install core data science packages
-pip install numpy pandas matplotlib seaborn scikit-learn jupyter
+pip install numpy pandas matplotlib seaborn scikit-learn statsmodels jupyter
 
 # Verify Docker
 docker run hello-world

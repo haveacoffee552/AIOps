@@ -95,6 +95,20 @@ print(f"Precision: {precision:.2f}  Recall: {recall:.2f}  F1: {f1:.2f}")
 
 **For anomaly detection, recall matters more than precision.** Missing a real anomaly (false negative) is worse than a false alarm.
 
+## LSTM — What It Is and When You'd Use It
+
+LSTM (Long Short-Term Memory) is a type of recurrent neural network that remembers patterns across long sequences. Chapter 15 of the Géron textbook covers the mechanics in depth.
+
+**In AIOps, LSTM is used for:**
+- Log anomaly detection (DeepLog — predicts next log event ID in a sequence)
+- Multivariate time series anomaly detection (LSTM Autoencoder)
+- Capacity forecasting when multiple correlated features are inputs
+
+**Why we don't build one here:**
+LSTM requires significantly more data (thousands of sequences), longer training time, and GPU-friendly infrastructure to tune effectively. Isolation Forest and Prophet solve 90% of AIOps problems with far less complexity. Build LSTM only after you've exhausted simpler methods.
+
+**If you want to go deeper:** Study the DeepLog paper (Phase 3 resources) and the LSTM Autoencoder pattern in Phase 2's theory guide. The Géron chapter 15 provides the implementation foundation.
+
 ## Practice Exercise
 
 1. Generate 2000 CPU data points: 1950 normal (mean=50, std=5), 50 anomalies (mean=90, std=3).

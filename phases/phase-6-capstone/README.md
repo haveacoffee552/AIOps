@@ -1,5 +1,7 @@
 # Phase 6 — Capstone Integration + MLOps in Production
 
+→ [System Architecture Diagram + API Contract](architecture.md)
+
 **Duration:** Month 7 (6 weeks) | **Output:** Unified AIOps platform, deployed and documented
 
 ## Week 1–2: Integration

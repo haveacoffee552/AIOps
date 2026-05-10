@@ -39,6 +39,46 @@ iso = IsolationForest(contamination=0.01, random_state=42)
 anomalies = iso.fit_predict(residual.values.reshape(-1,1))
 ```
 
+## SARIMA (Seasonal ARIMA)
+
+Use SARIMA when you have stationary data (or near-stationary after differencing) and need short-horizon forecasts (<24h). It is more interpretable than Prophet for data without strong weekly seasonality.
+
+```python
+from statsmodels.tsa.statespace.sarimax import SARIMAX
+
+# SARIMA(p,d,q)(P,D,Q,s) where s = seasonal period
+# For 1-minute data with hourly seasonality: s=60
+model = SARIMAX(series,
+    order=(1, 1, 1),         # (AR, differencing, MA)
+    seasonal_order=(1, 1, 1, 60),  # seasonal (AR, diff, MA, period)
+    enforce_stationarity=False,
+    enforce_invertibility=False
+)
+result = model.fit(disp=False)
+
+# Forecast 60 minutes ahead
+forecast = result.get_forecast(steps=60)
+forecast_mean = forecast.predicted_mean
+confidence_intervals = forecast.conf_int()
+
+# Values outside the 95% CI are anomalies
+print(f"Forecast: {forecast_mean.iloc[-1]:.2f}")
+```
+
+**When to prefer SARIMA over Prophet:**
+- Your data has no weekly pattern (intra-day only)
+- You need a forecast horizon under 6 hours
+- You want explicit model order control (interpretability)
+
+**Limitation:** SARIMA is sensitive to parameter selection (p, d, q). Use `auto_arima` from the `pmdarima` library to search for optimal parameters:
+```bash
+pip install pmdarima
+```
+```python
+from pmdarima import auto_arima
+model = auto_arima(series, seasonal=True, m=60, stepwise=True, suppress_warnings=True)
+```
+
 ## Facebook Prophet
 
 Business-friendly forecasting. Handles daily/weekly/yearly seasonality automatically. Returns a forecast with uncertainty intervals — use the interval to flag anomalies.

@@ -17,6 +17,12 @@ aiops-platform/modules/rca_engine/
 └── main.py
 ```
 
+## Step 0: Install dependencies
+
+```bash
+pip install networkx requests
+```
+
 ## Step 1: graph_builder.py
 
 ```python
@@ -43,15 +49,15 @@ def build_dependency_graph(lookback_minutes: int = 60) -> nx.DiGraph:
     traces = resp.json().get("data", [])
 
     for trace in traces:
+        processes = trace.get("processes", {})
         spans = {s["spanID"]: s for s in trace["spans"]}
         for span in trace["spans"]:
-            caller = span["processID"]          # parent service
-            callee = span.get("operationName")  # child operation
+            svc_name = processes.get(span["processID"], {}).get("serviceName", span["processID"])
             if span.get("references"):
                 parent_id = span["references"][0]["spanID"]
                 if parent_id in spans:
-                    parent_service = spans[parent_id]["processID"]
-                    G.add_edge(parent_service, span["processID"])
+                    parent_svc = processes.get(spans[parent_id]["processID"], {}).get("serviceName", spans[parent_id]["processID"])
+                    G.add_edge(parent_svc, svc_name)
     return G
 ```
 
@@ -145,14 +151,24 @@ from correlator    import load_recent_alerts, group_into_incident
 from rca_scorer    import score_root_causes
 from reporter      import write_report
 
+# Map metric names to the service that owns them. Update this for your stack.
+METRIC_TO_SERVICE = {
+    "cpu_idle":       "node-exporter",
+    "mem_available":  "node-exporter",
+    "http_requests":  "api-server",
+}
+
 def run():
     alerts = load_recent_alerts(window_minutes=10)
     if not alerts:
         print("No recent alerts — no incident to analyze")
         return
-    incident  = group_into_incident(alerts)
-    graph     = build_dependency_graph(lookback_minutes=60)
-    candidates = score_root_causes(graph, incident["affected_metrics"])
+    incident = group_into_incident(alerts)
+    graph    = build_dependency_graph(lookback_minutes=60)
+    affected_services = list({
+        METRIC_TO_SERVICE.get(m, m) for m in incident["affected_metrics"]
+    })
+    candidates = score_root_causes(graph, affected_services)
     write_report(incident, candidates)
 
 if __name__ == "__main__":

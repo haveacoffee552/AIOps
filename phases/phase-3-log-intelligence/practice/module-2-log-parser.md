@@ -10,7 +10,7 @@ A pipeline that reads log files, parses them with Drain3, clusters templates, de
 
 ```
 aiops-platform/modules/log_intelligence/
-├── parser.py          # Drain3 log parsing
+├── log_parser.py      # Drain3 log parsing
 ├── clusterer.py       # TF-IDF + DBSCAN on templates
 ├── correlator.py      # Match log anomalies to metric alerts
 └── main.py
@@ -19,13 +19,13 @@ aiops-platform/modules/log_intelligence/
 ## Step 1: Install Drain3
 
 ```bash
-pip install drain3 scikit-learn
+pip install "drain3==0.9.11" scikit-learn
 ```
 
-## Step 2: parser.py
+## Step 2: log_parser.py
 
 ```python
-# aiops-platform/modules/log_intelligence/parser.py
+# aiops-platform/modules/log_intelligence/log_parser.py
 from drain3 import TemplateMiner
 from drain3.template_miner_config import TemplateMinerConfig
 import json
@@ -48,9 +48,9 @@ def parse_log_file(log_path: str) -> list[dict]:
             result = parser.add_log_message(line)
             results.append({
                 "raw":        line,
-                "template":   result["template_mined"],
-                "cluster_id": result["cluster_id"],
-                "change_type": result["change_type"],
+                "template":   result.cluster_template if result else line,
+                "cluster_id": result.cluster_id if result else -1,
+                "change_type": "none",
             })
     return results
 ```
@@ -151,8 +151,9 @@ def correlate(log_anomalies: list[dict], log_timestamps: list[datetime]) -> list
 import json
 from pathlib import Path
 from datetime import datetime
-from parser import parse_log_file
-from clusterer import find_rare_patterns
+from log_parser import parse_log_file
+from clusterer  import find_rare_patterns
+from correlator import correlate
 
 LOGS_PATH   = "/var/log/app/application.log"   # adjust to your log path
 OUTPUT_FILE = Path("aiops-platform/data/log_anomalies.jsonl")
@@ -166,6 +167,10 @@ def run():
             r["detected_at"] = datetime.utcnow().isoformat()
             f.write(json.dumps(r) + "\n")
     print(f"Found {len(rare)} rare log patterns from {len(parsed)} lines")
+    timestamps = [datetime.utcnow()] * len(rare)
+    correlated = correlate(rare, timestamps)
+    if correlated:
+        print(f"Correlated {len(correlated)} log anomalies with metric alerts")
 
 if __name__ == "__main__":
     run()
